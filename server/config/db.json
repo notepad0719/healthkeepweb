@@ -1,0 +1,10 @@
+{
+  "development": {
+    "username": "admin",
+    "password": "healthkeepadmin",
+    "database": "healthkeepweb",
+    "host": "healthkeepweb.clm6oey1hkbt.ap-northeast-2.rds.amazonaws.com",
+    "port": "3306",
+    "dialect": "mysql"
+  }
+}
