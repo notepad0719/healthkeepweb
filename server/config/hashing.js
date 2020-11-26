@@ -3,5 +3,7 @@ module.exports = {
     const sha256 = require('sha256');
 
     return sha256(mail + pwd + salt)
+
   },
+  salt: ''
 }

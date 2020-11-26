@@ -8,7 +8,7 @@ let SpritesmithPlugin = require('webpack-spritesmith');
 
 var isDebug = true;
 
-function flagsNameTempl(data) {}
+function flagsNameTempl(data) { }
 let spritePlugin = new SpritesmithPlugin({});
 
 module.exports = {
@@ -99,7 +99,7 @@ module.exports = {
         loaders: [
           'style-loader',
           `css-loader?${
-            isDebug ? 'sourceMap&' : 'minimize&'
+          isDebug ? 'sourceMap&' : 'minimize&'
           }modules&localIdentName=[local]&importLoaders=2`,
           'sass-loader',
         ],
@@ -114,7 +114,7 @@ module.exports = {
           {
             loader: `css-loader?${
               isDebug ? 'sourceMap&' : 'minimize&'
-            }importLoaders=2`,
+              }importLoaders=2`,
           },
           {
             loader: 'postcss-loader',
@@ -134,9 +134,9 @@ module.exports = {
         use: [
           'isomorphic-style-loader',
           `css-loader?${
-            isDebug ? 'sourceMap&' : 'minimize&'
+          isDebug ? 'sourceMap&' : 'minimize&'
           }modules&localIdentName=${
-            isDebug ? '[name]_[local]_[hash:base64:3]' : '[hash:base64:4]'
+          isDebug ? '[name]_[local]_[hash:base64:3]' : '[hash:base64:4]'
           }&importLoaders=2`,
           {
             loader: 'postcss-loader',
@@ -151,7 +151,7 @@ module.exports = {
   },
 
   devServer: {
-    port: 4000,
+    port: 5000,
     open: true,
     proxy: {
       '/': 'http://localhost',

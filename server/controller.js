@@ -1,48 +1,143 @@
 const path = require('path');
 const model = require('./model');
+
 const salt = require(path.join(__dirname, 'config', 'db.json'))
   .salt
 
 const hashing = require(path.join(__dirname, 'config', 'hashing.js'))
 
-const AWS = require('aws-sdk');
-AWS.config.loadFromPath(path.join(__dirname, 'config', 'awsConfig.json'));
+const moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
+const now_date = moment().format('YYYY-MM-DD HH:mm:ss');
+
+// 사용자 아이피 가져오기
+const user_ip = require("ip");
+
+// 이메일 보내기
+const nodeMailer = require('nodemailer');
+
+// 메일 발송 서비스에 대한 환경 설정
+const mailPoster = nodeMailer.createTransport({
+  service: 'naver',
+  host: 'smtp.naver.com',
+  port: 587,
+  auth: {
+    user: '',
+    pass: ''
+  }
+});
+
+// 메일을 받을 유저 설정
+const mailOpt = (user_data, title, contents) => {
+  const mailOptions = {
+    from: '',
+    to: user_data.email,
+    subject: title,
+    text: contents
+  };
+
+  return mailOptions;
+}
+
+// 메일 전송
+const sendMail = (mailOption) => {
+  mailPoster.sendMail(mailOption, function (error, info) {
+
+
+    if (error) {
+      console.log('에러 ' + error);
+    }
+    else {
+      console.log('전송 완료 ' + info.response);
+    }
+  });
+}
 
 module.exports = {
   needs: () => upload,
   api: {
     sendPw: (req, res) => {
+
       const body = req.body;
-      const hash = hashing.enc(body.email, body.pw, salt)
+      const hash = hashing.enc(body.id, body.password, salt)
+      console.log(`salt value : ${salt}`);
+      console.log(`hashing value : ${hash} `);
 
       model.api.searchInfo(body, hash, result => {
+
         var obj = {};
         if (result[0]) {
-          obj['suc'] = true;
+          obj['suc'] = result[0].dataValues;
           obj['msg'] = '로그인 성공';
+          obj['ip'] = user_ip.address();
 
         } else {
           obj['suc'] = false;
           obj['msg'] = '로그인 실패';
         }
-
         res.send(obj);
       })
-      //console.log('2. salt 값 : ', salt)
-      //console.log('3. hash 결과 : ', hash)
     },
+  },
+
+  search: {
+    id: (req, res) => {
+      const body = req.body;
+
+      model.search.id(body, result => {
+        res.send(result)
+      })
+    },
+
+    pw: (req, res) => {
+      const body = req.body;
+
+      model.search.pw(body, result => {
+        var res_data = {};
+
+        if (result[0]) {
+          const title = "비밀번호 조회 인증에 대한 6자리 숫자입니다.";
+          const contents = () => {
+            let number = "";
+            let random = 0;
+
+            for (let i = 0; i < 6; i++) {
+              random = Math.trunc(Math.random() * (9 - 0) + 0);
+              number += random;
+            }
+
+            res_data['secret'] = number;
+            return "인증 칸에 아래의 숫자를 입력해주세요. \n" + number;
+          }
+
+          // 조회되는 데이터가 있는 경우 (메일 전송)
+          const mailOption = mailOpt(result[0].dataValues, title, contents());
+          sendMail(mailOption)
+
+          res_data['result'] = result;
+          res.send(res_data)
+
+        } else {
+          // 데이터가 조회되지 않을 경우
+          res.send(false)
+        }
+      })
+    }
   },
 
   add: {
     board: (req, res) => {
       const body = req.body;
 
-      model.add.board(body, result => {
+      model.add.board(body, now_date, result => {
         if (result) {
           res.send(true);
         }
       })
     },
+
     category: (req, res) => {
       const body = req.body;
 
@@ -56,12 +151,29 @@ module.exports = {
           obj['suc'] = false;
           obj['msg'] = '이미 있는 카테고리 입니다.';
         }
+
         res.send(obj)
       })
+    },
+
+    user: (req, res) => {
+      const body = req.body;
+
+      const hash_pw = hashing.enc(body.id, body.password, salt);
+
+      model.add.user(body, hash_pw, now_date, result => {
+        res.send(result);
+      })
+    },
+
+    reply: (req, res) => {
+      const body = req.body;
+
+      model.add.reply(body, now_date, result => {
+        res.send(result)
+      })
     }
-
   },
-
 
   update: {
     view_cnt: (req, res) => {
@@ -78,15 +190,58 @@ module.exports = {
           expires: expires
         });
 
-
         model.update.view_cnt(body, result => {
           if (result) {
             res.send(true);
           }
         })
+      } else {
+        res.send(false)
       }
+    },
+
+    password: (req, res) => {
+      const body = req.body;
+      const hash_pw = hashing.enc(body.user_id, body.change_password, salt);
+
+      model.update.password(body, hash_pw, result => {
+        res.send(true)
+      })
+    },
+
+    like: (req, res) => {
+      const body = req.body;
+
+      model.check.like(body, data => {
+        // 중복이 아닌 경우
+        if (data.length === 0) {
+          model.update.like(body, result => {
+            res.send(result)
+          })
+
+        } else {
+          // 이미 좋아요를 눌렀을 경우
+          if (body.type === 'remove') {
+            model.update.like(body, result => {
+              res.send(result)
+            })
+
+          } else {
+            res.send(false)
+          }
+        }
+      })
+    },
+
+    board: (req, res) => {
+      const body = req.body;
+
+      model.update.board(body, data => {
+        res.send(true)
+      })
     }
   },
+
   delete: {
     category: (req, res) => {
       const body = req.body;
@@ -95,6 +250,22 @@ module.exports = {
         if (result) {
           res.send(result);
         }
+      })
+    },
+
+    board: (req, res) => {
+      const body = req.body;
+
+      model.delete.board(body, () => {
+        res.send(true)
+      })
+    },
+
+    reply: (req, res) => {
+      const body = req.body;
+
+      model.delete.reply(body, () => {
+        res.send(true)
       })
     }
   },
@@ -114,10 +285,12 @@ module.exports = {
           obj['suc'] = false;
           obj['msg'] = '이미 있는 카테고리 입니다.';
         }
+
         res.send(obj)
       })
     }
   },
+
   get: {
     board: (req, res) => {
       const body = req.body;
@@ -150,6 +323,41 @@ module.exports = {
 
       model.get.category(data => {
         res.send(data)
+      })
+    },
+
+    pre_and_next: (req, res) => {
+      const body = req.body;
+
+      model.get.pre_and_next(body, data => {
+        res.send(data)
+      })
+    },
+
+    reply_data: (req, res) => {
+      const body = req.body;
+
+      model.get.reply_data(body, data => {
+        res.send(data)
+      })
+    },
+
+    // get.
+    user_info: (req, res) => {
+      const body = req.body;
+
+      model.get.user_info(body, data => {
+        res.send(data)
+      })
+    }
+  },
+
+  check: {
+    like: (req, res) => {
+      const body = req.body;
+
+      model.check.like(body, result => {
+        res.send(result);
       })
     }
   }
