@@ -1,16 +1,16 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define(
-    'teacher', // 테이블의 이름을 지정
+    'category',
     {
       name: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
+        type: DataTypes.STRING(30),
+        allowNull: false
+      }
     },
     {
       charset: 'utf8',
       collate: 'utf8_general_ci',
       timestamps: false,
     }
-  );
+  )
 };

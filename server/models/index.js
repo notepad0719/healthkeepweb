@@ -4,7 +4,9 @@ const path = require('path');
 const Sequelize = require('sequelize');
 
 const env = process.env.NODE_ENV || 'development';
-const config = require(path.join(__dirname, '..', 'config', 'db.json'))[env];
+const config = require(path.join(__dirname, '..', 'config', 'db.json'))[
+  env
+];
 const db = {};
 
 let sequelize = new Sequelize(
@@ -14,9 +16,9 @@ let sequelize = new Sequelize(
   config,
   {
     define: {
-      charset: 'utf8mb4',
-      collate: 'utf8mb4_0900_ai_ci',
-    },
+      charset: 'utf8',
+      collate: 'utf8_general_ci'
+    }
   }
 );
 
@@ -28,21 +30,25 @@ db.sequelize
   .then(() => {
     console.log('Connection has been established successfully.');
   })
-  .catch((err) => {
+  .catch(err => {
     console.log('Unable to connect to the database: ', err);
   });
 
-db.Teacher = require('./teacher')(sequelize, Sequelize);
-db.Class = require('./class')(sequelize, Sequelize);
+db.Admin = require('./admin')(sequelize, Sequelize);
+db.Board = require('./board')(sequelize, Sequelize);
+db.Category = require('./category')(sequelize, Sequelize);
 
-db.Teacher.belongsToMany(db.Class, {
-  through: 'scedule',
-  foreignKey: 'teacher_id',
+
+//category DB table 1 : N 
+db.Category.hasMany(db.Board, {
+  foreignKey: 'cat_id',
+  sourceKey: 'id'
 });
-db.Class.belongsToMany(db.Teacher, {
-  through: 'scedule',
-  foreignKey: 'class_id',
+db.Board.belongsTo(db.Category, {
+  foreignKey: 'cat_id',
+  targetKey: 'id'
 });
 
-db.secret = '(9*)5$&!3%^0%^@@2$1!#5@2!4';
+
+
 module.exports = db;

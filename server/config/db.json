@@ -6,5 +6,6 @@
     "host": "healthkeepweb.clm6oey1hkbt.ap-northeast-2.rds.amazonaws.com",
     "port": "3306",
     "dialect": "mysql"
-  }
+  },
+  "salt": "yuuniv2020seprojecthealthkeepwebsystem"
 }
