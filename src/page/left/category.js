@@ -90,7 +90,7 @@ class category extends Component {
 
   render() {
     const { category, edit } = this.state;
-    const { _changeCatgory, login, admin, user_ip } = this.props;
+    const { _changeCatgory, login, admin } = this.props;
 
     let pre_cat = '';
     if (sessionStorage.getItem('category')) {
@@ -104,7 +104,7 @@ class category extends Component {
             <Link className={pre_cat === '' ? "pre_cat" : null} to='/' onClick={() => _changeCatgory('')}>
               전체 보기
               </Link>
-            {login && admin === 'Y' && user_ip === "192.168.0.3"
+            {login && admin === 'Y'
               ? !edit ? <input type='button' value='Edit' className='Edit' onClick={() => this.setState({ edit: !edit })} />
                 : <input type='button' value='Add' className='Edit' onClick={() => this._addCategory()} />
 

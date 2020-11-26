@@ -39,7 +39,7 @@ class header extends Component {
   }
 
   render() {
-    const { login, admin, user_ip, login_modal, _toggleModal } = this.props;
+    const { login, admin, login_modal, _toggleModal } = this.props;
 
     return (
       <div className='header_grid'>
