@@ -5,10 +5,9 @@ import { Link } from 'react-router-dom';
 import { Search } from './index.js';
 
 class list extends Component {
-
   render() {
     const {
-      list_data, list_all_page, list_search, list_page, _changePage
+      list_data, list_all_page, list_search, list_page, _changePage,
     } = this.props;
 
     return (
@@ -24,8 +23,8 @@ class list extends Component {
           const view_url = '/view/' + el.board_id;
 
           return (
-            <div className='list_grid list_data' key={key}>
-              <div> <Link to={view_url}> {el.title} </Link> </div>
+            <div className='list_grid list_data' key={key} >
+              <div > <Link to={view_url}> {el.title} </Link> </div>
               <div> </div>
               <div className='acenter'> {el.date.slice(0, 10)} </div>
             </div>

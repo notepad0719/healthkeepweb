@@ -126,19 +126,6 @@ class login extends Component {
             </form>
 
             <div className='search_user_info_div'>
-              <div>
-                <b style={{ 'marginLeft': '15px' }}
-                  onClick={() => this._openSearchModal('id')}
-                >
-                  아이디 찾기
-                        </b>
-              </div>
-
-              <div>
-                <b onClick={() => this._openSearchModal('pw')}>
-                  비밀번호 찾기
-                        </b>
-              </div>
             </div>
           </div>
         </Modal>
